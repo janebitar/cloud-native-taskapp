@@ -35,14 +35,9 @@ pipeline {
 
         stage('Deploy to S3') {
             steps {
-                sh '''
-                if [ -d build ]; then
-                    aws s3 sync build/ s3://$AWS_BUCKET --delete
-                elif [ -d dist ]; then
-                    aws s3 sync dist/ s3://$AWS_BUCKET --delete
-                else
-                    aws s3 cp index.html s3://$AWS_BUCKET/
-                fi
+                  sh '''
+                  echo "Deploying to S3..."
+                  aws s3 sync build/ s3://taskapp-staging-619434110426-eu-central-1 --delete || aws s3 sync dist/ s3://taskapp-staging-619434110426-eu-central-1 --delete || aws s3 cp index.html s3://taskapp-staging-619434110426-eu-central-1/
                 '''
             }
         }
