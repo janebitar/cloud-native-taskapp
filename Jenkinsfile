@@ -8,21 +8,51 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
-                sh 'if [ -f package.json ]; then npm install; else echo "No Node project"; fi'
+                sh '''
+                if [ -f package.json ]; then
+                    npm install
+                else
+                    echo "No Node project"
+                fi
+                '''
             }
         }
 
         stage('Test') {
             steps {
-                sh 'if [ -f package.json ]; then npm test --if-present; else echo "No tests"; fi'
+                sh '''
+                if [ -f package.json ]; then
+                    npm test --if-present
+                else
+                    echo "No tests"
+                fi
+                '''
             }
         }
 
         stage('Build') {
             steps {
-                sh 'if [ -f package.json ]; then npm run build --if-present; else echo "No build step"; fi'
+                sh '''
+                if [ -f package.json ]; then
+                    npm run build --if-present
+                else
+                    echo "No build step"
+                fi
+                '''
+            }
+        }
+
+        stage('Debug Workspace') {
+            steps {
+                sh 'ls -R'
             }
         }
 
@@ -30,23 +60,17 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-credentials', region: 'eu-central-1') {
                     sh '''
-                    echo "Deploying to S3..."
+                    echo "Deploying backend/public to S3..."
 
-                    if [ -d build ]; then
-                        aws s3 sync build/ s3://taskapp-staging-619434110426-eu-central-1 --delete
-                    elif [ -d dist ]; then
-                        aws s3 sync dist/ s3://taskapp-staging-619434110426-eu-central-1 --delete
+                    if [ -d backend/public ]; then
+                        aws s3 sync backend/public/ s3://taskapp-staging-619434110426-eu-central-1 --delete
                     else
-                        aws s3 cp index.html s3://taskapp-staging-619434110426-eu-central-1/
+                        echo "ERROR: backend/public folder not found"
+                        ls -R
+                        exit 1
                     fi
                     '''
                 }
-            }
-        }
-
-        stage('Debug Workspace') {
-            steps {
-                sh 'ls -R'
             }
         }
     }
