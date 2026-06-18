@@ -8,7 +8,6 @@ pipeline {
 
     stages {
 
-
         stage('Install Dependencies') {
             steps {
                 sh 'if [ -f package.json ]; then npm install; else echo "No Node project"; fi'
@@ -43,11 +42,12 @@ pipeline {
                     '''
                 }
             }
-        } 
+        }
 
         stage('Debug Workspace') {
             steps {
                 sh 'ls -R'
-        }  
+            }
+        }
     }
 }
